@@ -1,7 +1,4 @@
-import pathlib
-import requests
 from flask import Flask, render_template,Response
-from flask_opencv_streamer import streamer
 import cv2
 import mediapipe as mp
 import numpy as np
@@ -75,61 +72,54 @@ def generate_frames():
                 try:
                     landmarks = detection.pose_landmarks.landmark
 
-                        # GET COORDINATES
-                    left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
-                                    landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
-                    left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
-                                     landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
-                    left_heel = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x,
-                                     landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
-
-                    right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
-                                     landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
-                    right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
-                                      landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
-                    right_heel = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].x,
-                                      landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
-
+                    # left arm
+                    left_wrist = [landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].x,
+                                  landmarks[mp_pose.PoseLandmark.LEFT_WRIST.value].y]
                     left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
-                                         landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                                     landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                    left_elbow = [landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].x,
+                                  landmarks[mp_pose.PoseLandmark.LEFT_ELBOW.value].y]
+
+                    # right arm
+                    right_wrist = [landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].x,
+                                   landmarks[mp_pose.PoseLandmark.RIGHT_WRIST.value].y]
                     right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
-                                          landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+                    right_elbow = [landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].x,
+                                   landmarks[mp_pose.PoseLandmark.RIGHT_ELBOW.value].y]
 
-                    left = calc_angle(left_hip, left_knee, left_heel)
-                    right = calc_angle(right_hip, right_knee, right_heel)
+                    left_elbow_angle = calc_angle(left_shoulder, left_elbow, left_wrist)
+                    right_elbow_angle = calc_angle(right_shoulder, right_elbow, right_wrist)
+                    # Visualize angles
+                    cv2.putText(image, str(left_elbow_angle),
+                                tuple(np.multiply(left_elbow, [640, 480]).astype(int)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(image, str(right_elbow_angle),
+                                tuple(np.multiply(right_elbow, [640, 480]).astype(int)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
 
-                    cv2.putText(image, str(left_angle),
-                                    tuple(np.multiply(left_knee, [640, 480]).astype(int)),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
-                    cv2.putText(image, str(right_angle),
-                                    tuple(np.multiply(right_knee, [640, 480]).astype(int)),
-                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
+                    left_angle.append(left_elbow_angle)
+                    right_angle.append(right_elbow_angle)
 
-                    left_angle.append(left)
-                    right_angle.append(right)
+                    # down state
+                    if left_elbow_angle > 160 and right_elbow_angle > 160:
+                        if not range_flag:
+                            feedback = 'Did not curl completely.'
+                        else:
+                            feedback = 'Good rep!'
+                        state = 'Down'
 
-                        # POSE CHECKING 1: Knees bending inwards
-                    shoulder_dist = left_shoulder[0] - right_shoulder[0]
-                    knee_dist = left_knee[0] - right_knee[0]
+                    # not fully curled
+                    elif (left_elbow_angle > 50 and right_elbow_angle > 50) and state == 'Down':
+                        range_flag = False
+                        feedback = ''
 
-                    if shoulder_dist - knee_dist > 0.04:
-                            feedback = 'Open up your knees further apart to shoulder width!'
-                    else:
-                            feedback = ''
-
-                        # standing up
-                    if left > 170 and right > 170:
-                        state = "Up"
-
-                    if left < 165 and right < 165:
-                        feedback = 'Almost there... lower until height of hips!'
-
-                    if left < 140 and right < 140 and state == "Up":
-                        state = "Down"
+                    # up state
+                    elif (left_elbow_angle < 30 and right_elbow_angle < 30) and state == 'Down':
+                        state = 'Up'
+                        feedback = ''
+                        range_flag = True
                         counter += 1
-
-                    if state == "Down":
-                        feedback = 'Good rep!'
 
                 except:
                     pass
