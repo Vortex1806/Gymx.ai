@@ -175,14 +175,14 @@ def get_khana():
     firstname="Shubh"
     return render_template('getkhana.html',name=name,photourl=photourl,email=email,firstname=firstname)
 
-# @app.route('/logworkout',endpoint='log_endpoint')
-# def log_workout():
-#     print("got request")
-#     name="Shubh Vora"
-#     photourl="www.gmail.com"
-#     email="shubhvora03@gmail.com"
-#     firstname="Shubh"
-#     return render_template('logworkout.html',name=name,photourl=photourl,email=email,firstname=firstname)
+@app.route('/logworkout',endpoint='log_endpoint')
+def log_work():
+    print("got request")
+    name="Shubh Vora"
+    photourl="www.gmail.com"
+    email="shubhvora03@gmail.com"
+    firstname="Shubh"
+    return render_template('workoutlog.html',name=name,photourl=photourl,email=email,firstname=firstname)
 
 @app.route('/monitoring',endpoint='monitoring_endpoint')
 def stream_page():
