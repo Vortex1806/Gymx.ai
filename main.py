@@ -35,7 +35,7 @@ def log(query):
 
 
 def getworkoutplan(query):
-    result = llm.invoke(f"Create me a workout plan for {query} donot format with *")
+    result = llm.invoke(f"Create me a workout plan for {query} donot use * for formatting")
     return result.content
 
 def getkhana(query):

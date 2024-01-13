@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="./muscle.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../static/css/login.css">
+    <title>LOGIN/SIGNUP</title>
+</head>
+<body>
+    <div class="container">
+        <form class="login-form">
+            <h1>Login</h1>
+            <label for="userid">User ID:</label>
+            <input type="text" id="userid" name="userid" required>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit">Login</button>
+            <p class="or">OR</p>
+             <a href="{{ url_for('login_endpoint', _external=True) }}">
+            <span class="google-signin">
+                <img src="../static/assets/google-logo.png" alt="Google Logo">
+                Sign in with Google
+                </span>
+            </a>
+            <p class="signup-link">Don't have an account? <a href="#">Sign up</a></p>
+        </form>
+    </div>
+</body>
+</html>

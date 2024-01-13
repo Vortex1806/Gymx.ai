@@ -1,10 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Gymx.ai</title>
-</head>
-<body>
-    <h1>GYMX.AI</h1>
-</body>
-</html>
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <link rel="stylesheet" href="https://use.typekit.net/your-kit-id.css">
+            <link rel="icon" href="./muscle.ico" type="image/x-icon">
+            <!-- Add this to the head section of your HTML -->
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+            <style>
+            body {
+                background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
+            }</style>
+            <link rel="stylesheet" href="../static/css/index.css">
+            <title>FITPULSE</title>
+        </head>
+        <body>
+            <div class="navbar">
+                <span class="navlogo"><a href="index.html"><img src="../static/assets/logo-free.png" alt="Logo"></a></span>
+                <span class="aboutUsButton"><a href="#" class="about">About US</a></span>
+            </div>
+            
+            <div class="container" data-aos="fade-up">
+                <video id="backgroundvideo" autoplay muted loop width="1280" height="720" type="video/mp4">
+                    <source src="../static/assets/1.mp4">
+                </video>
+                <div class="navbar">
+
+                </div>
+                <div class="typewriting-section">
+                    <p><span class="unlock">UNLOCK</span></p>
+                    <p><span class="ctext"></span></p>
+                </div>
+                <span class="getstarted"><a href="{{ url_for('loginpage_endpoint', _external=True) }}" class="get-started-button">Get Started</a></span>
+                
+                <div class="mask"></div>
+            </div>
+
+
+
+            <div id="about" class="about-div vignette-transition">
+                <div data-aos="fade-up">
+                    <p id="about_content_heading">Why Us?</p>
+                    <div id="about_content">
+                        <ul>
+                            <li>Personalized Intelligence</li>
+                            <li>Beyond Calories</li>
+                            <li>Predictive Guidance</li>
+                            <li>Interactive Coaching</li>
+                        </ul>
+                    </div>
+                </div>
+                <img src="../static/assets/about-image.jpg">
+            </div>
+
+
+
+
+
+
+            <script src="https://unpkg.com/typed.js@2.1.0/dist/typed.umd.js"></script>
+            <script>
+                AOS.init();
+                var typed=new Typed(".ctext",{
+                    strings: ["YOUR FULL POTENTIAL", "A WORLD OF POSSIBILITIES", "A NEW YOU"],
+                    typeSpeed:50,
+                    backSpeed:50,
+                    loop:true
+                });
+                document.querySelector('.about').addEventListener('click', function () {
+                document.querySelector('#about').scrollIntoView({
+                    behavior: 'smooth'
+                });
+                document.querySelector('#about').classList.add('vignette-transition');
+            });
+          
+            </script>
+        </body>
+        </html>
