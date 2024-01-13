@@ -3,7 +3,7 @@ import requests
 from flask import Flask, render_template
 
 
-app = Flask("Code Ai app")
+app = Flask(__name__)
 
 # @app.route('/', endpoint='index_endpoint')
 # def index():
@@ -14,9 +14,13 @@ app = Flask("Code Ai app")
 # def login():
 #     return render_template("login.html")
 
-@app.route('/',)
+@app.route('/',endpoint='workoutplanner_endpoint')
 def workout_planner():
-    return render_template('workout.html')
+    name="Shubh Vora"
+    photourl="www.gmail.com"
+    email="shubhvora03@gmail.com"
+    firstname="Shubh"
+    return render_template('workout.html',name=name,photourl=photourl,email=email,firstname=firstname)
 
 
 
