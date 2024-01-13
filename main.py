@@ -15,8 +15,12 @@ def getworkoutplan(query):
     result = llm.invoke(f"Create me a workout plan for {query}")
     return result.content
 
+def getkhana(query):
+    result = llm.invoke(f"Create me a healthy recipie for {query} give me the name of item, list of ingredients and then the steps to make this and the nutritional value in all of this")
+    return result.content
+
 @app.route('/getworkout', methods=['POST'])
-def generate_response():
+def generate_workout():
     print("Called ai Response")
     try:
         data = request.json
@@ -28,6 +32,18 @@ def generate_response():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/getkhana',methods=['POST'])
+def generate_recipie():
+    print("Called ai Response")
+    try:
+        data = request.json
+        query = data.get('prompt', '')
+
+        response_text = getkhana(query)
+
+        return jsonify({'response': response_text})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=4000)
