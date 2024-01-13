@@ -6,31 +6,167 @@ import cv2
 import mediapipe as mp
 import numpy as np
 app = Flask(__name__)
+feed = cv2.VideoCapture(0)
+WIDTH = 10000
+HEIGHT = 10000
+feed.set(cv2.CAP_PROP_FRAME_WIDTH, WIDTH)
+feed.set(cv2.CAP_PROP_FRAME_HEIGHT, HEIGHT)
+width = int(feed.get(cv2.CAP_PROP_FRAME_WIDTH))
+height = int(feed.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-camera = cv2.VideoCapture(0 )
+# draw landmarks & connections to screen
+mp_drawing = mp.solutions.drawing_utils
+# import Pose model
+mp_pose = mp.solutions.pose
+
+def calc_angle(x, y, z):
+    x = np.array(x)
+    y = np.array(y)
+    z = np.array(z)
+
+    radians = np.arctan2(z[1] - y[1], z[0] - y[0]) - np.arctan2(x[1] - y[1], x[0] - y[0])
+    angle = np.abs(radians * 180.0 / np.pi)
+
+    if angle > 180.0:
+        angle = 360 - angle
+
+    return angle
 # @app.route('/', endpoint='index_endpoint')
 # def index():
 #     return render_template('index.html')
 
 
-# @app.route('/login',endpoint='login_endpoint')
-# def login():
-#     return render_template("login.html")
 
 
 def generate_frames():
-    while True:
-        success,frame=camera.read()
-        if not success:
-            break
-        else:
-            
-            ret,buffer=cv2.imencode('.jpg',frame)
-            frame=buffer.tobytes()
-        yield(b'--frame\r\n'
-              b'Content-Type:image/jpeg\r\n\r\n'+frame+b'\r\n')
+    counter = 0
+    state = 'Down'
+    range_flag = True
+    halfway = False
+    feedback = ''
+    frame_count = 0
+    # Plotting variables
+    frames = []
+    left_angle = []
+    right_angle = []
+    body_angles = []
+    while feed.isOpened():
+        while True:
+            success, frame = feed.read()
+            if not success:
+                break
+            else:
+                frame_count += 1
+                frames.append(frame_count)
+                # Mirror frame
+                frame = cv2.flip(frame, 1)
+                # Recolor image from BGR to RGB
+                image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                image.flags.writeable = False
 
+                # Pose detection
+                with mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5) as pose:
+                    detection = pose.process(image)
+                # Recolor image from RGB back to BGR
+                image.flags.writeable = True
+                image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
+                # Your exercise recognition code here...
+                try:
+                    landmarks = detection.pose_landmarks.landmark
+
+                        # GET COORDINATES
+                    left_hip = [landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].x,
+                                    landmarks[mp_pose.PoseLandmark.LEFT_HIP.value].y]
+                    left_knee = [landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].x,
+                                     landmarks[mp_pose.PoseLandmark.LEFT_KNEE.value].y]
+                    left_heel = [landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].x,
+                                     landmarks[mp_pose.PoseLandmark.LEFT_HEEL.value].y]
+
+                    right_hip = [landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].x,
+                                     landmarks[mp_pose.PoseLandmark.RIGHT_HIP.value].y]
+                    right_knee = [landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].x,
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_KNEE.value].y]
+                    right_heel = [landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].x,
+                                      landmarks[mp_pose.PoseLandmark.RIGHT_HEEL.value].y]
+
+                    left_shoulder = [landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].x,
+                                         landmarks[mp_pose.PoseLandmark.LEFT_SHOULDER.value].y]
+                    right_shoulder = [landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].x,
+                                          landmarks[mp_pose.PoseLandmark.RIGHT_SHOULDER.value].y]
+
+                    left = calc_angle(left_hip, left_knee, left_heel)
+                    right = calc_angle(right_hip, right_knee, right_heel)
+
+                    cv2.putText(image, str(left_angle),
+                                    tuple(np.multiply(left_knee, [640, 480]).astype(int)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
+                    cv2.putText(image, str(right_angle),
+                                    tuple(np.multiply(right_knee, [640, 480]).astype(int)),
+                                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2, cv2.LINE_AA)
+
+                    left_angle.append(left)
+                    right_angle.append(right)
+
+                        # POSE CHECKING 1: Knees bending inwards
+                    shoulder_dist = left_shoulder[0] - right_shoulder[0]
+                    knee_dist = left_knee[0] - right_knee[0]
+
+                    if shoulder_dist - knee_dist > 0.04:
+                            feedback = 'Open up your knees further apart to shoulder width!'
+                    else:
+                            feedback = ''
+
+                        # standing up
+                    if left > 170 and right > 170:
+                        state = "Up"
+
+                    if left < 165 and right < 165:
+                        feedback = 'Almost there... lower until height of hips!'
+
+                    if left < 140 and right < 140 and state == "Up":
+                        state = "Down"
+                        counter += 1
+
+                    if state == "Down":
+                        feedback = 'Good rep!'
+
+                except:
+                    pass
+
+                    # Status box setup
+            cv2.rectangle(image, (0, 0), (width, int(height * 0.1)), (245, 117, 16), -1)
+            cv2.putText(image, "REPS:", (int(width * 0.01), int(height * 0.025)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1,
+                                cv2.LINE_AA)  # font, size, color, line width, line type
+            cv2.putText(image, str(counter), (int(width * 0.01), int(height * 0.08)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+            cv2.putText(image, "STATE:", (int(width * 0.1), int(height * 0.025)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+            cv2.putText(image, state, (int(width * 0.1), int(height * 0.08)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+            cv2.putText(image, "FEEDBACK:", (int(width * 0.2), int(height * 0.025)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1, cv2.LINE_AA)
+            cv2.putText(image, feedback, (int(width * 0.2), int(height * 0.08)),
+                                cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+            mp_drawing.draw_landmarks(image, detection.pose_landmarks, mp_pose.POSE_CONNECTIONS,
+                                              mp_drawing.DrawingSpec(color=(245, 117, 66), thickness=2,
+                                                                     circle_radius=2),
+                                              mp_drawing.DrawingSpec(color=(245, 66, 230), thickness=2,
+                                                                     circle_radius=2))
+
+            if cv2.waitKey(10) & 0xFF == ord('q'):
+                break
+
+            # Encode image to JPEG
+            # _, buffer = cv2.imencode('.jpg', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            _, buffer = cv2.imencode('.jpg', image)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                           b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 @app.route('/',endpoint='workoutplanner_endpoint')
 def workout_planner():
     name="Shubh Vora"
