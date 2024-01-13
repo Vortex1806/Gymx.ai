@@ -157,6 +157,7 @@ def generate_frames():
             frame = buffer.tobytes()
             yield (b'--frame\r\n'
                            b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
 @app.route('/',endpoint='workoutplanner_endpoint')
 def workout_planner():
     name="Shubh Vora"
@@ -174,13 +175,21 @@ def get_khana():
     firstname="Shubh"
     return render_template('getkhana.html',name=name,photourl=photourl,email=email,firstname=firstname)
 
+# @app.route('/logworkout',endpoint='log_endpoint')
+# def log_workout():
+#     print("got request")
+#     name="Shubh Vora"
+#     photourl="www.gmail.com"
+#     email="shubhvora03@gmail.com"
+#     firstname="Shubh"
+#     return render_template('logworkout.html',name=name,photourl=photourl,email=email,firstname=firstname)
+
 @app.route('/monitoring',endpoint='monitoring_endpoint')
 def stream_page():
     return render_template('video_stream.html')
 
 @app.route('/video')
 def video():
-
     return Response(generate_frames(),mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
