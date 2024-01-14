@@ -53,7 +53,7 @@ def callback():
     session["email"] = id_info.get("email")
     session["first_name"] = id_info.get("given_name")
     session["userphoto"] = id_info.get("picture")
-    return redirect("/workout_endpoint")
+    return redirect("/questionnaire")
 
 
 feed = cv2.VideoCapture(0)
@@ -225,10 +225,16 @@ def login():
 def loginpage():
     return render_template('login.html')
 
+
 @app.route('/logout', endpoint='logout_endpoint')
 def logout():
     session.clear()
     return redirect('/')
+
+@app.route('/questionnaire',endpoint='questionaire_endpoint')
+def paramsq():
+    return render_template('parameters.html')
+
 
 @app.route('/workout_endpoint',endpoint='workoutplanner_endpoint')
 @login_is_required

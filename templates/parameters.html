@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Questionnaire</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #282c35;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #question-container {
+      width: 400px;
+      background-color: #1e222c;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      color: #fff;
+      text-align: center; /* Center the content */
+    }
+    #question-container h2 {
+      margin-bottom: 15px;
+      font-size: 18px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      box-sizing: border-box;
+      border: 1px solid #555;
+      border-radius: 5px;
+      background-color: #373e4c;
+      color: #fff;
+    }
+    input[type="number"] {
+      width: calc(100% - 20px);
+    }
+    select {
+      appearance: none;
+      background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
+      background-position: calc(100% - 20px) calc(1em + 2px), calc(100% - 15px) calc(1em + 2px);
+      background-size: 5px 5px, 5px 5px;
+      background-repeat: no-repeat;
+    }
+
+    .radio-group, .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* Align items to the start */
+    }
+
+    .radio-group label, .checkbox-group label {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .radio-group input, .checkbox-group input {
+      margin-right: 8px;
+    }
+
+    #next-btn {
+      background-color: #007bff;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s;
+    }
+
+    #next-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+<div id="question-container">
+  <!-- Questions will be dynamically added here -->
+</div>
+<script>
+  const questions = [
+    "Question 1: Enter your height, weight, and age:",
+    "Question 2: Why do you want to get fit?",
+    "Question 3: What type of exercise do you prefer?",
+    "Question 4: How would you describe your proficiency with workouts?",
+    "Question 5: How much time can you dedicate to working out each week?",
+    "Question 6: Do you have access to a gym?",
+    "Question 7: Do you have any health conditions? (Enter details)",
+    // Add more questions as needed
+  ];
+
+  let currentQuestionIndex = 0;
+  let userAnswers = {};
+  async function myFunction(userAnswers) {
+        const inputText = userAnswers;
+        try {
+              const response = await fetch('http://127.0.0.1:4000/setparam', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ prompt: inputText }),
+                  mode: 'cors'
+              });
+              console.log("Calling data");
+              const data = await response.json();
+        } catch (error) {
+          console.error('Error fetching response from API:', error);
+        }
+  }
+
+  function nextQuestion() {
+    const answer = getAnswer();
+
+    // Handle the first question separately to extract height, weight, and age
+    if (currentQuestionIndex === 0) {
+      const { height, weight, age } = answer;
+      userAnswers = { height, weight, age };
+    } else {
+      // Store the answer in the userAnswers object
+      userAnswers[questions[currentQuestionIndex]] = answer;
+    }
+
+    currentQuestionIndex++;
+
+    if (currentQuestionIndex < questions.length) {
+      displayQuestion();
+    } else {
+      // Remove the first question from the userAnswers object
+      delete userAnswers[questions[0]];
+
+      // Display the final JSON object with all answers
+      console.log("User Input JSON:", userAnswers);
+      myFunction(userAnswers);
+      window.location.href = 'http://127.0.0.1:5000/workout_endpoint';
+      // Optionally, you can handle the completion event here.
+    }
+  }
+
+  function displayQuestion() {
+    const questionContainer = document.getElementById("question-container");
+    const question = questions[currentQuestionIndex];
+
+    questionContainer.innerHTML = `<h2>${question}</h2>`;
+
+    // Dynamically generate input elements based on the question
+    if (currentQuestionIndex === 0) {
+      // Question 1: Height, Weight, and Age
+      generateTextInput("height-input", "Height (cm)");
+      generateTextInput("weight-input", "Weight (kg)");
+      generateTextInput("age-input", "Age");
+    } else if (currentQuestionIndex === 1) {
+      // Question 2: Why do you want to get fit?
+      const reasons = [
+        "Lose weight",
+        "Gain weight",
+        "Gain muscle",
+        "Improve endurance",
+        "Increase flexibility",
+        "Have a healthy lifestyle"
+      ];
+
+      generateDropdown("reason-dropdown", reasons);
+
+    } else if (currentQuestionIndex === 2) {
+      // Question 3: What type of exercise do you prefer?
+      const exerciseTypes = [
+        "Cardio",
+        "Strength training",
+        "Outdoor activities",
+        "Group activities"
+      ];
+
+      generateRadioGroup("exercise-radio", exerciseTypes);
+
+    } else if (currentQuestionIndex === 3) {
+      // Question 4: How would you describe your proficiency with workouts?
+      const proficiencyLevels = [
+        "Beginner",
+        "Intermediate",
+        "Advanced",
+        "Pro"
+      ];
+
+      generateRadioGroup("proficiency-radio", proficiencyLevels);
+
+    } else if (currentQuestionIndex === 4) {
+      // Question 5: How much time can you dedicate to working out each week?
+      generateTimeInput("weekly-hours");
+
+    } else if (currentQuestionIndex === 5) {
+      // Question 6: Do you have access to a gym?
+      const gymOptions = [
+        "Yes, I have access to a gym",
+        "No, I prefer home workouts",
+        "No, but I plan to join a gym"
+      ];
+
+      generateRadioGroup("gym-radio", gymOptions);
+    } else if (currentQuestionIndex === 6) {
+      // Question 7: Do you have any health conditions? (Text input)
+      generateTextInput("health-conditions-input", "Health Conditions");
+    }
+
+    // Add a common "Next" button for all questions
+    questionContainer.innerHTML += `
+      <button id="next-btn" onclick="nextQuestion()">Next</button>
+    `;
+  }
+
+  function generateTextInput(id, label) {
+    const inputHtml = `
+      <div class="input-group">
+        <label for="${id}">${label}</label>
+        <input type="text" id="${id}" placeholder="Enter value">
+      </div>
+    `;
+    questionContainer.insertAdjacentHTML("beforeend", inputHtml);
+  }
+
+  function generateDropdown(id, options) {
+    const dropdownHtml = `
+      <div class="input-group">
+        <label for="${id}">Select one:</label>
+        <select id="${id}">
+          ${options.map(option => `<option value="${option}">${option}</option>`).join('')}
+        </select>
+      </div>
+    `;
+    questionContainer.insertAdjacentHTML("beforeend", dropdownHtml);
+  }
+
+  function generateRadioGroup(id, options) {
+    const radioHtml = `
+      <div class="input-group radio-group">
+        <label>Choose one:</label>
+        ${options.map(option => `
+          <label>
+            <input type="radio" name="${id}" value="${option}">
+            <span>${option}</span>
+          </label>
+        `).join('')}
+      </div>
+    `;
+    questionContainer.insertAdjacentHTML("beforeend", radioHtml);
+  }
+
+  function generateTimeInput(id) {
+    const timeInputHtml = `
+      <div class="input-group">
+        <label for="${id}">Enter hours per week:</label>
+        <input type="number" id="${id}" placeholder="Enter hours">
+      </div>
+    `;
+    questionContainer.insertAdjacentHTML("beforeend", timeInputHtml);
+  }
+
+  function getAnswer() {
+    if (currentQuestionIndex === 0) {
+      const height = document.getElementById("height-input").value;
+      const weight = document.getElementById("weight-input").value;
+      const age = document.getElementById("age-input").value;
+      return { height, weight, age };
+    }
+
+    const currentQuestionType =
+      currentQuestionIndex === 1
+        ? "reason-dropdown"
+        : currentQuestionIndex === 2
+        ? "exercise-radio"
+        : currentQuestionIndex === 3
+        ? "proficiency-radio"
+        : currentQuestionIndex === 4
+        ? "weekly-hours"
+        : currentQuestionIndex === 5
+        ? "gym-radio"
+        : currentQuestionIndex === 6
+        ? "health-conditions-input"
+        : `question${currentQuestionIndex + 1}-input`;
+
+    const answerElement = document.querySelector(`input[name="${currentQuestionType}"]:checked`) || document.getElementById(currentQuestionType);
+
+    if (answerElement && answerElement.type === "checkbox") {
+      return Array.from(
+        document.querySelectorAll(`input[name=${currentQuestionType}]:checked`)
+      ).map((checkbox) => checkbox.value);
+    } else {
+      return answerElement ? answerElement.value : null;
+    }
+  }
+
+  // Display the first question initially
+  const questionContainer = document.getElementById("question-container");
+  displayQuestion();
+</script>
+
+</body>
+</html>

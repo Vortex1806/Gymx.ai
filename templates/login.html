@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="./muscle.ico" type="image/x-icon">
     <link rel="stylesheet" href="../static/css/login.css">
-    <title>LOGIN/SIGNUP</title>
+    <title>Login</title>
 </head>
 <body>
     <div class="container">
@@ -17,11 +16,8 @@
             <input type="password" id="password" name="password" required>
             <button type="submit">Login</button>
             <p class="or">OR</p>
-             <a href="{{ url_for('login_endpoint', _external=True) }}">
-            <span class="google-signin">
-                <img src="../static/assets/google-logo.png" alt="Google Logo">
+            <a href="{{ url_for('login_endpoint', _external=True) }}" class="google-signin">
                 Sign in with Google
-                </span>
             </a>
             <p class="signup-link">Don't have an account? <a href="#">Sign up</a></p>
         </form>

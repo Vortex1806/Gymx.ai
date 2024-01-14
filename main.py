@@ -1,3 +1,5 @@
+import json
+
 import pandas
 from flask import Flask, request, jsonify
 import os
@@ -16,6 +18,14 @@ llm = ChatGoogleGenerativeAI(model="gemini-pro",temperature=0.7)
 
 app = Flask(__name__)
 CORS(app)
+
+get_parameters = ""
+def setparameters(query):
+    get_parameters = query
+    with open("my_data.txt", "w") as file:
+        file.write(str(get_parameters))
+    return "Done"
+
 def log(query):
     df = pandas.read_csv("static/assets/userdata.csv")
     df_filtered = df[df['name'] == 'shubh']
@@ -35,11 +45,16 @@ def log(query):
 
 
 def getworkoutplan(query):
-    result = llm.invoke(f"Create me a workout plan for {query} donot use * for formatting")
+    with open("my_data.txt", "r") as file:
+        get_parameters = file.read()
+    print(f"Create me a workout plan my details are {get_parameters}, extra information is : {query}, donot use * for formatting")
+    result = llm.invoke(f"Create me a workout plan my details are {get_parameters}, extra information is : {query}, donot use * for formatting")
     return result.content
 
 def getkhana(query):
-    result = llm.invoke(f"Create me a healthy recipie for {query} give me the name of item, list of ingredients and then the steps to make this and the nutritional value in all of this donot format with *")
+    with open("my_data.txt", "r") as file:
+        get_parameters = file.read()
+    result = llm.invoke(f"Create me a healthy recipie, keep my goals in mind: {get_parameters}, these are the ingredients or extra parameters:  {query}, give me the name of item, list of ingredients and then the steps to make this and the nutritional value in all of this donot format with *")
     return result.content
 
 @app.route('/getworkout', methods=['POST'])
@@ -84,6 +99,20 @@ def log_the_workout():
         print("Error:", str(e))  # Print the error for debugging
         return jsonify({'error': str(e)}), 500
 
+@app.route('/setparam',methods=['POST'])
+def setparamx():
+    print("Called ai Response")
+    try:
+        data = request.json
+        query = data.get('prompt', '')
+        response_text = setparameters(query)
+
+        print("Response Text:", response_text)  # Add debug print statements
+
+        return jsonify({'response': response_text})
+    except Exception as e:
+        print("Error:", str(e))  # Print the error for debugging
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=4000)
