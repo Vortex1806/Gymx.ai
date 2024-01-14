@@ -77,3 +77,100 @@ button:hover {
     text-align: center;
     margin-top: 20px;
 }
+.navlogo a img{
+    height: 90px; /* Adjust the height to make it bigger */
+    width: 500px;
+}
+.get-started-button {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    transform: translate(0, -50%);
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 20px;
+    border: solid 1px white; /* Add background color for better visibility */
+    border-radius: 5px;
+    font-size: 32px;
+    z-index: 2;
+}
+.getstarted a{
+    font-family: 'Proxima Nova', sans-serif;
+}
+.getstarted a:hover{
+    background-color: white;
+    color: black;
+}
+.typewriting-section {
+    z-index: 3;
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translate(0, -50%);
+    max-width: 60%;
+    color: #fff;
+}
+/* ... Other CSS rules remain the same ... */
+
+/* ... Other CSS rules remain the same ... */
+
+/* .text {
+    font-size: 20px;
+    letter-spacing: 10px;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    animation: typing 5s steps(50, end) infinite, cursor 0.4s step-end infinite alternate;
+}
+
+@keyframes cursor {
+    50% {
+        border-color: transparent;
+    }
+}
+
+@keyframes typing {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+} */
+
+div.typewriting-section p{
+    color: white;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 50px;
+}
+.unlock{
+    font-size: 100px;
+}
+.ctext{
+    color: yellow;
+    font-family: 'Proxima Nova', sans-serif;
+    font-size: 50px;
+}
+.mask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1200px;
+    padding: 10px;
+    z-index: 3; /* Increase z-index to ensure visibility */
+  }
+div.navbar a{
+    text-decoration: none;
+}
