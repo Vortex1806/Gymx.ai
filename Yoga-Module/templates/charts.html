@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="../static/styles/charts.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+  </head>
+  <body>
+    <div class="chart2">
+      <canvas id="myChart1" height="300" width="500"></canvas>
+    </div>
+
+    <script>
+      var yValues = {{ values | tojson | safe }};
+      function generateTimeLabels(length) {
+        var timeLabels = [];
+        for (var i = 1; i <= length; i++) {
+          timeLabels.push("Time " + i);
+        }
+        return timeLabels;
+      }
+      var timeLabels = generateTimeLabels(yValues.length);
+      var chartData = {
+        labels: timeLabels,
+        datasets: [
+          {
+              backgroundColor: "#79D1CF",
+              borderColor: "#79D1CF",
+              data: yValues
+          }
+        ]
+      };
+      console.log(chartData);
+
+      var ctx = document.getElementById("myChart1").getContext("2d");
+      var myLine = new Chart(ctx, {
+        type: 'line',
+        data: chartData,
+        options: {
+          showTooltips: false,
+          animation: {
+            onComplete: function () {
+              var ctx = this.chart.ctx;
+              ctx.font = this.scale.font;
+              ctx.fillStyle = this.scale.textColor;
+              ctx.textAlign = "center";
+              ctx.textBaseline = "bottom";
+
+              this.data.datasets.forEach(function (dataset) {
+                dataset.data.forEach(function (value, index) {
+                  var x = dataset._meta[Object.keys(dataset._meta)[0]].data[index]._model.x;
+                  var y = dataset._meta[Object.keys(dataset._meta)[0]].data[index]._model.y;
+                  ctx.fillText(value, x, y - 10);
+                });
+              });
+            }
+          }
+        }
+      });
+    </script>
+
+
+  </body>
+</html>
